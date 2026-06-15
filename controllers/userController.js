@@ -10,13 +10,11 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new User({
+    const user = await User.create({
       name,
       email,
       password: hashedPassword,
     });
-
-    await user.save();
 
     res.json({
       message: "User Registered Successfully",
@@ -26,7 +24,6 @@ const registerUser = async (req, res) => {
         email: user.email,
       },
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -64,7 +61,6 @@ const loginUser = async (req, res) => {
         email: user.email,
       },
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -73,23 +69,20 @@ const loginUser = async (req, res) => {
 /* ---------------- SAVE CV ---------------- */
 const saveCV = async (req, res) => {
   try {
-    const { userId, skills, education, experience, projects } = req.body;
+    const { skills, education, experience, projects } = req.body;
 
-    const cv = new CV({
-      userId,
+    const cv = await CV.create({
+      userId: req.user.id,   // 🔥 TOKEN SE AUTO USER
       skills,
       education,
       experience,
       projects,
     });
 
-    await cv.save();
-
     res.json({
       message: "CV Saved Successfully",
       cv,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -108,7 +101,6 @@ const getCV = async (req, res) => {
       message: "CV fetched successfully",
       cv,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -131,7 +123,6 @@ const updateCV = async (req, res) => {
       message: "CV updated successfully",
       cv,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -149,45 +140,40 @@ const deleteCV = async (req, res) => {
     res.json({
       message: "CV deleted successfully",
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-/* ---------------- SKILL GAP ANALYSIS ---------------- */
+/* ---------------- ANALYZE SKILLS ---------------- */
 const analyzeSkills = async (req, res) => {
   try {
-    const { userId, requiredSkills } = req.body;
+    const { requiredSkills } = req.body;
 
-    const cv = await CV.findOne({ userId });
+    const cv = await CV.findOne({ userId: req.user.id });
 
     if (!cv) {
       return res.status(404).json({ message: "CV not found" });
     }
 
-    const userSkills = cv.skills;
-
     const missingSkills = requiredSkills.filter(
-      (skill) => !userSkills.includes(skill)
+      (skill) => !cv.skills.includes(skill)
     );
 
     res.json({
-      yourSkills: userSkills,
+      yourSkills: cv.skills,
       requiredSkills,
       missingSkills,
       suggestion:
         missingSkills.length === 0
           ? "You are fully qualified 🎉"
-          : `Learn these skills: ${missingSkills.join(", ")}`,
+          : `Learn: ${missingSkills.join(", ")}`,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-/* ---------------- EXPORT ---------------- */
 module.exports = {
   registerUser,
   loginUser,
