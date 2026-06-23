@@ -16,7 +16,7 @@ const {
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 
-// 🔐 Protected Routes
+
 router.post("/cv", auth, saveCV);
 router.get("/cv/:userId", auth, getCV);
 router.post("/analyze", auth, analyzeSkills);
