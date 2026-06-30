@@ -18,9 +18,9 @@ router.post("/login", loginUser);
 
 
 router.post("/cv", auth, saveCV);
-router.get("/cv/:userId", auth, getCV);
+router.get("/cv", auth, getCV);
 router.post("/analyze", auth, analyzeSkills);
-router.put("/cv/:userId", auth, updateCV);
-router.delete("/cv/:userId", auth, deleteCV);
+router.put("/cv", auth, updateCV);
+router.delete("/cv", auth, deleteCV);
 
 module.exports = router;
